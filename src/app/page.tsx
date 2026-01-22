@@ -7,7 +7,7 @@ export default function HomePage() {
         <p className="label">Personal Ledger</p>
         <h1 className="text-4xl sm:text-5xl">Family Balance Tracker</h1>
         <p className="max-w-2xl text-base text-stone-700 sm:text-lg">
-          Keep your father's expenses clear and easy to follow. Use the manage view to add deposits and
+          Keep your father&apos;s expenses clear and easy to follow. Use the manage view to add deposits and
           expenses, and share the dashboard link for a clean, read-only balance view.
         </p>
       </header>
@@ -33,7 +33,7 @@ export default function HomePage() {
         >
           <div>
             <p className="label">Read Only</p>
-            <h2 className="mt-3 text-2xl">Dad's Dashboard</h2>
+            <h2 className="mt-3 text-2xl">Dad&apos;s Dashboard</h2>
             <p className="mt-3 text-stone-600">
               Large balance display with a simple list of expenses for quick review.
             </p>
