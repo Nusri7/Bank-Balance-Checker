@@ -1,0 +1,38 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  color: #0b0f1a;
+  background:
+    radial-gradient(1200px 400px at 10% -10%, #f3e6cf 0%, transparent 60%),
+    radial-gradient(900px 500px at 90% 0%, #e9f0ff 0%, transparent 55%),
+    #f6f3ec;
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+  letter-spacing: 0.01em;
+}
+
+@layer components {
+  .surface {
+    @apply rounded-2xl border border-stone-200/80 bg-white/90 shadow-soft backdrop-blur;
+  }
+
+  .surface-strong {
+    @apply rounded-2xl border border-stone-300 bg-white shadow-soft;
+  }
+
+  .label {
+    @apply text-xs font-semibold uppercase tracking-[0.2em] text-stone-500;
+  }
+}
