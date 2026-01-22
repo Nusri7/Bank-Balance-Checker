@@ -24,7 +24,7 @@ export default function HomePage() {
               Add deposits, track expenses, and correct entries.
             </p>
           </div>
-          <div className="text-sm font-semibold text-stone-800">Open Admin -></div>
+          <div className="text-sm font-semibold text-stone-800">Open Admin -&gt;</div>
         </Link>
 
         <Link
@@ -38,7 +38,7 @@ export default function HomePage() {
               Large balance display with a simple list of expenses for quick review.
             </p>
           </div>
-          <div className="text-sm font-semibold text-stone-800">View Dashboard -></div>
+          <div className="text-sm font-semibold text-stone-800">View Dashboard -&gt;</div>
         </Link>
       </section>
     </main>

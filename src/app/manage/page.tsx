@@ -144,7 +144,7 @@ export default function ManagePage() {
           href="/dashboard"
           className="surface-strong inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-stone-800"
         >
-          Open Dad's Dashboard ->
+          Open Dad's Dashboard -&gt;
         </Link>
       </header>
 
