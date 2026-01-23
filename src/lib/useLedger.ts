@@ -1,53 +1,65 @@
 ﻿'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { DEFAULT_LEDGER, STORAGE_KEY, sanitizeLedger } from './ledger';
+import { supabase } from './supabaseClient';
+import { EMPTY_LEDGER } from './ledger';
 import type { Deposit, Expense, LedgerData } from './ledger';
 
-const readLedger = (): LedgerData => {
-  if (typeof window === 'undefined') return DEFAULT_LEDGER;
+const fetchDeposits = async () => {
+  const { data, error } = await supabase
+    .from('deposits')
+    .select('id, amount, date')
+    .order('date', { ascending: false })
+    .order('created_at', { ascending: false });
 
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (!stored) return DEFAULT_LEDGER;
-
-    return sanitizeLedger(JSON.parse(stored));
-  } catch {
-    return DEFAULT_LEDGER;
-  }
+  if (error) throw error;
+  return (data ?? []) as Deposit[];
 };
 
-const writeLedger = (value: LedgerData) => {
-  if (typeof window === 'undefined') return;
+const fetchExpenses = async () => {
+  const { data, error } = await supabase
+    .from('expenses')
+    .select('id, description, amount, date')
+    .order('date', { ascending: false })
+    .order('created_at', { ascending: false });
 
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
-  } catch {
-    // Ignore write errors (private mode, quota, etc.)
-  }
-};
-
-const createId = (prefix: string) => {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-    return `${prefix}-${crypto.randomUUID()}`;
-  }
-
-  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  if (error) throw error;
+  return (data ?? []) as Expense[];
 };
 
 export const useLedger = () => {
-  const [ledger, setLedger] = useState<LedgerData>(DEFAULT_LEDGER);
-  const [hydrated, setHydrated] = useState(false);
+  const [ledger, setLedger] = useState<LedgerData>(EMPTY_LEDGER);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setLedger(readLedger());
-    setHydrated(true);
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        setLoading(true);
+        const [deposits, expenses] = await Promise.all([fetchDeposits(), fetchExpenses()]);
+        if (!cancelled) {
+          setLedger({ deposits, expenses });
+          setError(null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to load ledger data.');
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    writeLedger(ledger);
-  }, [hydrated, ledger]);
 
   const totalSpent = useMemo(
     () => ledger.expenses.reduce((sum, expense) => sum + expense.amount, 0),
@@ -64,28 +76,75 @@ export const useLedger = () => {
     [totalDeposited, totalSpent]
   );
 
-  const addExpense = (expense: Omit<Expense, 'id'>) => {
-    setLedger((prev) => ({
-      ...prev,
-      expenses: [{ ...expense, id: createId('exp') }, ...prev.expenses],
-    }));
+  const addExpense = async (expense: Omit<Expense, 'id'>) => {
+    const { data, error } = await supabase
+      .from('expenses')
+      .insert({
+        description: expense.description,
+        amount: expense.amount,
+        date: expense.date,
+      })
+      .select('id, description, amount, date')
+      .single();
+
+    if (error) {
+      setError(error.message);
+      return;
+    }
+
+    if (data) {
+      setLedger((prev) => ({
+        ...prev,
+        expenses: [data as Expense, ...prev.expenses],
+      }));
+    }
   };
 
-  const deleteExpense = (id: string) => {
+  const deleteExpense = async (id: string) => {
+    const { error } = await supabase.from('expenses').delete().eq('id', id);
+
+    if (error) {
+      setError(error.message);
+      return;
+    }
+
     setLedger((prev) => ({
       ...prev,
       expenses: prev.expenses.filter((expense) => expense.id !== id),
     }));
   };
 
-  const addDeposit = (deposit: Omit<Deposit, 'id'>) => {
-    setLedger((prev) => ({
-      ...prev,
-      deposits: [{ ...deposit, id: createId('dep') }, ...prev.deposits],
-    }));
+  const addDeposit = async (deposit: Omit<Deposit, 'id'>) => {
+    const { data, error } = await supabase
+      .from('deposits')
+      .insert({
+        amount: deposit.amount,
+        date: deposit.date,
+      })
+      .select('id, amount, date')
+      .single();
+
+    if (error) {
+      setError(error.message);
+      return;
+    }
+
+    if (data) {
+      setLedger((prev) => ({
+        ...prev,
+        deposits: [data as Deposit, ...prev.deposits],
+      }));
+    }
   };
 
-  const deleteDeposit = (id: string) => {
+  const deleteDeposit = async (id: string) => {
+    const { error } = await supabase.from('deposits').delete().eq('id', id);
+
+    if (error) {
+      setError(error.message);
+      return;
+    }
+
     setLedger((prev) => ({
       ...prev,
       deposits: prev.deposits.filter((deposit) => deposit.id !== id),
@@ -125,6 +184,7 @@ export const useLedger = () => {
     totalDeposited,
     currentBalance,
     latestDeposit,
-    hydrated,
+    loading,
+    error,
   };
 };

@@ -27,6 +27,8 @@ export default function ManagePage() {
     totalSpent,
     totalDeposited,
     currentBalance,
+    loading,
+    error,
   } = useLedger();
 
   const [expenseForm, setExpenseForm] = useState(emptyExpenseState);
@@ -68,7 +70,7 @@ export default function ManagePage() {
       }));
     };
 
-  const handleAddExpense = (event: FormEvent<HTMLFormElement>) => {
+  const handleAddExpense = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setExpenseError('');
 
@@ -90,7 +92,7 @@ export default function ManagePage() {
       return;
     }
 
-    addExpense({
+    await addExpense({
       description,
       amount: amountValue,
       date: expenseForm.date,
@@ -103,7 +105,7 @@ export default function ManagePage() {
     }));
   };
 
-  const handleAddDeposit = (event: FormEvent<HTMLFormElement>) => {
+  const handleAddDeposit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setDepositError('');
 
@@ -119,7 +121,7 @@ export default function ManagePage() {
       return;
     }
 
-    addDeposit({
+    await addDeposit({
       amount: amountValue,
       date: depositForm.date,
     });
@@ -139,6 +141,10 @@ export default function ManagePage() {
           <p className="mt-2 max-w-xl text-sm text-stone-600 sm:text-base">
             Add expenses and deposits, then share the dashboard link for a simple read-only view.
           </p>
+          {loading ? (
+            <p className="mt-3 text-sm text-stone-500">Loading data...</p>
+          ) : null}
+          {error ? <p className="mt-2 text-sm font-semibold text-expense">{error}</p> : null}
         </div>
         <Link
           href="/dashboard"

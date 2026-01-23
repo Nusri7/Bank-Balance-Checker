@@ -4,7 +4,15 @@ import { formatCurrency, formatDate } from '@/lib/format';
 import { useLedger } from '@/lib/useLedger';
 
 export default function DashboardPage() {
-  const { orderedExpenses, totalSpent, totalDeposited, currentBalance, latestDeposit } = useLedger();
+  const {
+    orderedExpenses,
+    totalSpent,
+    totalDeposited,
+    currentBalance,
+    latestDeposit,
+    loading,
+    error,
+  } = useLedger();
 
   return (
     <main className="flex flex-1 flex-col gap-8">
@@ -14,6 +22,10 @@ export default function DashboardPage() {
           <p className="mt-2 max-w-xl text-sm text-stone-600 sm:text-base">
             Clear summary of all expenses and the remaining balance.
           </p>
+          {loading ? (
+            <p className="mt-3 text-sm text-stone-500">Loading data...</p>
+          ) : null}
+          {error ? <p className="mt-2 text-sm font-semibold text-expense">{error}</p> : null}
         </div>
       </header>
 
