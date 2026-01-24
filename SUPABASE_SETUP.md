@@ -9,6 +9,7 @@ create extension if not exists "pgcrypto";
 create table if not exists deposits (
   id uuid primary key default gen_random_uuid(),
   ledger text not null default 'dad',
+  description text not null default '',
   amount numeric not null,
   date date not null,
   created_at timestamptz not null default now()
@@ -26,6 +27,8 @@ create table if not exists expenses (
 alter table deposits add column if not exists ledger text not null default 'dad';
 alter table expenses add column if not exists ledger text not null default 'dad';
 
+alter table deposits add column if not exists description text not null default '';
+
 alter table deposits enable row level security;
 alter table expenses enable row level security;
 
@@ -41,9 +44,9 @@ create policy "Public delete expenses" on expenses for delete using (true);
 ## 2) Seed sample data (optional)
 
 ```sql
-insert into deposits (ledger, amount, date)
+insert into deposits (ledger, description, amount, date)
 values
-  ('dad', 50000, '2026-01-04');
+  ('dad', 'Opening Balance', 50000, '2026-01-04');
 
 insert into expenses (ledger, description, amount, date)
 values

@@ -10,7 +10,7 @@ export type LedgerKey = 'dad' | 'me';
 const fetchDeposits = async (ledgerKey: LedgerKey) => {
   const { data, error } = await supabase
     .from('deposits')
-    .select('id, amount, date')
+    .select('id, description, amount, date')
     .eq('ledger', ledgerKey)
     .order('date', { ascending: false })
     .order('created_at', { ascending: false });
@@ -131,10 +131,11 @@ export const useLedger = (ledgerKey: LedgerKey = 'dad') => {
       .from('deposits')
       .insert({
         ledger: ledgerKey,
+        description: deposit.description,
         amount: deposit.amount,
         date: deposit.date,
       })
-      .select('id, amount, date')
+      .select('id, description, amount, date')
       .single();
 
     if (error) {

@@ -12,6 +12,7 @@ const emptyExpenseState = {
 };
 
 const emptyDepositState = {
+  description: '',
   amount: '',
   date: '',
 };
@@ -109,7 +110,13 @@ export default function ManagePage() {
     event.preventDefault();
     setDepositError('');
 
+    const description = depositForm.description.trim();
     const amountValue = Number(depositForm.amount);
+
+    if (!description) {
+      setDepositError('Please add a short note for the deposit.');
+      return;
+    }
 
     if (!Number.isFinite(amountValue) || amountValue <= 0) {
       setDepositError('Enter a valid amount greater than zero.');
@@ -122,12 +129,14 @@ export default function ManagePage() {
     }
 
     await addDeposit({
+      description,
       amount: amountValue,
       date: depositForm.date,
     });
 
     setDepositForm((prev) => ({
       ...prev,
+      description: '',
       amount: '',
     }));
   };
@@ -206,6 +215,16 @@ export default function ManagePage() {
           <div className="surface p-6">
             <h2 className="text-xl">Record Deposit</h2>
             <form onSubmit={handleAddDeposit} className="mt-5 flex flex-col gap-4">
+              <label className="text-sm font-semibold text-stone-700">
+                Note
+                <input
+                  type="text"
+                  placeholder="e.g., Salary, Transfer"
+                  value={depositForm.description}
+                  onChange={handleDepositChange('description')}
+                  className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-base shadow-sm focus:border-stone-400 focus:outline-none"
+                />
+              </label>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="text-sm font-semibold text-stone-700">
                   Amount
@@ -279,16 +298,21 @@ export default function ManagePage() {
                 className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-stone-200 bg-white px-4 py-3"
               >
                 <div>
-                  <p className="text-base font-semibold text-stone-800">{formatCurrency(deposit.amount)}</p>
+                  <p className="text-base font-semibold text-stone-800">{deposit.description}</p>
                   <p className="text-xs text-stone-500">{formatDate(deposit.date)}</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => deleteDeposit(deposit.id)}
-                  className="rounded-full border border-stone-200 px-3 py-1 text-xs font-semibold text-stone-600 transition hover:border-stone-400"
-                >
-                  Delete
-                </button>
+                <div className="flex items-center gap-4">
+                  <p className="text-base font-semibold text-balance">
+                    {formatCurrency(deposit.amount)}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => deleteDeposit(deposit.id)}
+                    className="rounded-full border border-stone-200 px-3 py-1 text-xs font-semibold text-stone-600 transition hover:border-stone-400"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))
           )}

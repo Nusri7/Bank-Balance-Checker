@@ -56,6 +56,9 @@ export default function DashboardPage() {
             <h2 className="mt-2 text-xl sm:text-2xl">
               {latestDeposit ? formatCurrency(latestDeposit.amount) : 'No deposits yet'}
             </h2>
+            {latestDeposit ? (
+              <p className="mt-1 text-xs text-stone-500">{latestDeposit.description}</p>
+            ) : null}
           </div>
           {latestDeposit ? (
             <p className="text-sm text-stone-500">{formatDate(latestDeposit.date)}</p>
