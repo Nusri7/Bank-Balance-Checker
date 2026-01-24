@@ -12,7 +12,7 @@ export default function HomePage() {
         </p>
       </header>
 
-      <section className="grid gap-6 md:grid-cols-2">
+      <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Link
           href="/manage"
           className="surface group flex flex-col justify-between gap-6 p-6 transition hover:-translate-y-1 hover:shadow-xl"
@@ -39,6 +39,20 @@ export default function HomePage() {
             </p>
           </div>
           <div className="text-sm font-semibold text-stone-800">View Dashboard -&gt;</div>
+        </Link>
+
+        <Link
+          href="/my-ledger"
+          className="surface group flex flex-col justify-between gap-6 p-6 transition hover:-translate-y-1 hover:shadow-xl"
+        >
+          <div>
+            <p className="label">Private</p>
+            <h2 className="mt-3 text-2xl">My Money</h2>
+            <p className="mt-3 text-stone-600">
+              Track your own deposits and expenses with a separate balance view.
+            </p>
+          </div>
+          <div className="text-sm font-semibold text-stone-800">Open My Ledger -&gt;</div>
         </Link>
       </section>
     </main>

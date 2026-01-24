@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import Link from 'next/link';
-import { type ChangeEvent, type FormEvent, useEffect, useState } from 'react';
+import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from 'react';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { useLedger } from '@/lib/useLedger';
 
@@ -16,7 +16,7 @@ const emptyDepositState = {
   date: '',
 };
 
-export default function ManagePage() {
+export default function MyLedgerPage() {
   const {
     addExpense,
     deleteExpense,
@@ -29,7 +29,9 @@ export default function ManagePage() {
     currentBalance,
     loading,
     error,
-  } = useLedger('dad');
+  } = useLedger('me');
+
+  const dadLedger = useLedger('dad');
 
   const [expenseForm, setExpenseForm] = useState(emptyExpenseState);
   const [depositForm, setDepositForm] = useState(emptyDepositState);
@@ -132,25 +134,32 @@ export default function ManagePage() {
     }));
   };
 
+  const dadBalance = dadLedger.currentBalance;
+  const balanceAfterDad = useMemo(() => currentBalance - dadBalance, [currentBalance, dadBalance]);
+
   return (
     <main className="flex flex-1 flex-col gap-8">
       <header className="flex flex-wrap items-start justify-between gap-6">
         <div>
-          <p className="label">Admin / Private</p>
-          <h1 className="mt-2 text-3xl sm:text-4xl">Manage Ledger</h1>
+          <p className="label">Private</p>
+          <h1 className="mt-2 text-3xl sm:text-4xl">My Money</h1>
           <p className="mt-2 max-w-xl text-sm text-stone-600 sm:text-base">
-            Add expenses and deposits, then share the dashboard link for a simple read-only view.
+            Track your own deposits and expenses, plus see your balance after your dad&apos;s balance is
+            subtracted.
           </p>
-          {loading ? (
+          {loading || dadLedger.loading ? (
             <p className="mt-3 text-sm text-stone-500">Loading data...</p>
           ) : null}
           {error ? <p className="mt-2 text-sm font-semibold text-expense">{error}</p> : null}
+          {dadLedger.error ? (
+            <p className="mt-2 text-sm font-semibold text-expense">{dadLedger.error}</p>
+          ) : null}
         </div>
         <Link
-          href="/dashboard"
+          href="/"
           className="surface-strong inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-stone-800"
         >
-          Open Dad&apos;s Dashboard -&gt;
+          Back Home -&gt;
         </Link>
       </header>
 
@@ -162,7 +171,7 @@ export default function ManagePage() {
               Description
               <input
                 type="text"
-                placeholder="e.g., Electricity Bill"
+                placeholder="e.g., Groceries"
                 value={expenseForm.description}
                 onChange={handleExpenseChange('description')}
                 className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-base shadow-sm focus:border-stone-400 focus:outline-none"
@@ -244,8 +253,18 @@ export default function ManagePage() {
             <p className="label">Totals</p>
             <div className="mt-4 grid gap-4">
               <div>
-                <p className="text-sm text-stone-500">Current Balance</p>
+                <p className="text-sm text-stone-500">My Balance</p>
                 <p className="text-3xl font-semibold text-balance">{formatCurrency(currentBalance)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-stone-500">Dad&apos;s Balance</p>
+                <p className="text-2xl font-semibold text-expense">{formatCurrency(dadBalance)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-stone-500">Balance After Dad</p>
+                <p className="text-2xl font-semibold text-balance">
+                  {formatCurrency(balanceAfterDad)}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-stone-500">Total Deposited</p>

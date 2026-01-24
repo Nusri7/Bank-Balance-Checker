@@ -5,10 +5,13 @@ import { supabase } from './supabaseClient';
 import { EMPTY_LEDGER } from './ledger';
 import type { Deposit, Expense, LedgerData } from './ledger';
 
-const fetchDeposits = async () => {
+export type LedgerKey = 'dad' | 'me';
+
+const fetchDeposits = async (ledgerKey: LedgerKey) => {
   const { data, error } = await supabase
     .from('deposits')
     .select('id, amount, date')
+    .eq('ledger', ledgerKey)
     .order('date', { ascending: false })
     .order('created_at', { ascending: false });
 
@@ -16,10 +19,11 @@ const fetchDeposits = async () => {
   return (data ?? []) as Deposit[];
 };
 
-const fetchExpenses = async () => {
+const fetchExpenses = async (ledgerKey: LedgerKey) => {
   const { data, error } = await supabase
     .from('expenses')
     .select('id, description, amount, date')
+    .eq('ledger', ledgerKey)
     .order('date', { ascending: false })
     .order('created_at', { ascending: false });
 
@@ -27,7 +31,7 @@ const fetchExpenses = async () => {
   return (data ?? []) as Expense[];
 };
 
-export const useLedger = () => {
+export const useLedger = (ledgerKey: LedgerKey = 'dad') => {
   const [ledger, setLedger] = useState<LedgerData>(EMPTY_LEDGER);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +42,10 @@ export const useLedger = () => {
     const load = async () => {
       try {
         setLoading(true);
-        const [deposits, expenses] = await Promise.all([fetchDeposits(), fetchExpenses()]);
+        const [deposits, expenses] = await Promise.all([
+          fetchDeposits(ledgerKey),
+          fetchExpenses(ledgerKey),
+        ]);
         if (!cancelled) {
           setLedger({ deposits, expenses });
           setError(null);
@@ -59,7 +66,7 @@ export const useLedger = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [ledgerKey]);
 
   const totalSpent = useMemo(
     () => ledger.expenses.reduce((sum, expense) => sum + expense.amount, 0),
@@ -80,6 +87,7 @@ export const useLedger = () => {
     const { data, error } = await supabase
       .from('expenses')
       .insert({
+        ledger: ledgerKey,
         description: expense.description,
         amount: expense.amount,
         date: expense.date,
@@ -101,7 +109,11 @@ export const useLedger = () => {
   };
 
   const deleteExpense = async (id: string) => {
-    const { error } = await supabase.from('expenses').delete().eq('id', id);
+    const { error } = await supabase
+      .from('expenses')
+      .delete()
+      .eq('id', id)
+      .eq('ledger', ledgerKey);
 
     if (error) {
       setError(error.message);
@@ -118,6 +130,7 @@ export const useLedger = () => {
     const { data, error } = await supabase
       .from('deposits')
       .insert({
+        ledger: ledgerKey,
         amount: deposit.amount,
         date: deposit.date,
       })
@@ -138,7 +151,11 @@ export const useLedger = () => {
   };
 
   const deleteDeposit = async (id: string) => {
-    const { error } = await supabase.from('deposits').delete().eq('id', id);
+    const { error } = await supabase
+      .from('deposits')
+      .delete()
+      .eq('id', id)
+      .eq('ledger', ledgerKey);
 
     if (error) {
       setError(error.message);

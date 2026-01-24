@@ -12,7 +12,7 @@ export default function DashboardPage() {
     latestDeposit,
     loading,
     error,
-  } = useLedger();
+  } = useLedger('dad');
 
   return (
     <main className="flex flex-1 flex-col gap-8">
