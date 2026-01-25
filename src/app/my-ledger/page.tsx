@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import Link from 'next/link';
-import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from 'react';
+import { type ChangeEvent, type FormEvent, useEffect, useState } from 'react';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { useLedger } from '@/lib/useLedger';
 
@@ -144,8 +144,6 @@ export default function MyLedgerPage() {
   };
 
   const dadBalance = dadLedger.currentBalance;
-  const balanceAfterDad = useMemo(() => currentBalance - dadBalance, [currentBalance, dadBalance]);
-
   return (
     <main className="flex flex-1 flex-col gap-8">
       <header className="flex flex-wrap items-start justify-between gap-6">
@@ -278,12 +276,6 @@ export default function MyLedgerPage() {
               <div>
                 <p className="text-sm text-stone-500">Dad&apos;s Balance</p>
                 <p className="text-2xl font-semibold text-expense">{formatCurrency(dadBalance)}</p>
-              </div>
-              <div>
-                <p className="text-sm text-stone-500">Balance After Dad</p>
-                <p className="text-2xl font-semibold text-balance">
-                  {formatCurrency(balanceAfterDad)}
-                </p>
               </div>
               <div>
                 <p className="text-sm text-stone-500">Total Deposited</p>
